@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>exuric</title>
+<title>Profile Card</title>
 
 <!-- Cursive font -->
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
@@ -19,46 +19,48 @@ body {
   align-items: center;
   height: 100vh;
   position: relative;
+  user-select: none;
 }
 
-/* Card */
+/* Glassy movable profile card */
 .card {
-  background: rgba(18,18,18,0.85);
-  padding: 30px 25px;
+  width: 320px;
+  backdrop-filter: blur(12px);
+  background: rgba(255,255,255,0.05);
   border-radius: 20px;
-  width: 300px;
-  text-align: center;
-  box-shadow: 0 0 40px rgba(0,0,0,0.8);
+  padding: 25px;
+  position: absolute;
+  cursor: move;
+  box-shadow: 0 0 30px rgba(0,0,0,0.7);
   z-index: 10;
-  position: relative;
-  overflow: hidden;
 }
 
-/* Profile name (cursive) */
+/* Name in cursive */
 .username {
   font-family: 'Great Vibes', cursive;
-  font-size: 32px;
-  margin-bottom: 12px;
+  font-size: 28px;
+  margin-bottom: 10px;
+  text-align: center;
 }
 
-/* Social list */
+/* Socials list */
 .socials {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   margin-top: 10px;
+  gap: 6px;
 }
 
 .social-item {
   display: flex;
   align-items: center;
-  margin: 5px 0;
   font-size: 16px;
 }
 
 .social-item img {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   margin-right: 8px;
 }
 
@@ -69,6 +71,7 @@ body {
   cursor: pointer;
   user-select: none;
   transition: transform 0.2s ease;
+  text-align: center;
 }
 .viewers:hover {
   transform: scale(1.1);
@@ -97,9 +100,7 @@ body {
 }
 
 @keyframes fall {
-  to {
-    transform: translateY(100vh);
-  }
+  to { transform: translateY(100vh); }
 }
 
 /* Wave background */
@@ -128,20 +129,21 @@ body {
 <div id="stars-container"></div>
 <div class="wave"></div>
 
-<!-- Card -->
-<div class="card">
-  <div class="username">exuric</div>
+<!-- Movable Glass Profile Card -->
+<div class="card" id="profileCard">
+  <div class="username">We will both burn in the fire</div>
 
-  <!-- Social list -->
   <div class="socials">
     <div class="social-item">
       <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg" alt="Discord Logo">
-      .exuric
+      luni.sh
     </div>
-    <!-- Add more socials below if you want -->
+    <div class="social-item">
+      <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/mail-dot-ru.svg" alt="Mail Logo">
+      lunissh@proton.me
+    </div>
   </div>
 
-  <!-- Viewer counter -->
   <div class="viewers">👁 <span id="viewerCount">499</span> viewers</div>
 </div>
 
@@ -152,7 +154,6 @@ body {
 /* ========== VIEWER COUNT WITH CLICK ANIMATION ========== */
 let viewers = localStorage.getItem("viewers");
 if (!viewers) viewers = 499;
-
 const viewerEl = document.getElementById("viewerCount");
 viewerEl.textContent = viewers;
 
@@ -163,13 +164,11 @@ setInterval(() => {
   viewerEl.textContent = viewers;
 }, 3600000);
 
-// Increment on click with animation
+// Increment on click with pop animation
 viewerEl.parentElement.addEventListener("click", () => {
   viewers++;
   localStorage.setItem("viewers", viewers);
   viewerEl.textContent = viewers;
-
-  // Simple pop animation
   viewerEl.parentElement.style.transform = "scale(1.2)";
   setTimeout(() => {
     viewerEl.parentElement.style.transform = "scale(1)";
@@ -188,6 +187,28 @@ for(let i=0;i<120;i++){
   star.style.width = star.style.height = (1 + Math.random()*2) + "px";
   starsContainer.appendChild(star);
 }
+
+/* ========== MAKE CARD DRAGGABLE ========== */
+const card = document.getElementById("profileCard");
+let isDragging = false;
+let offsetX, offsetY;
+
+card.addEventListener("mousedown", e => {
+  isDragging = true;
+  offsetX = e.clientX - card.offsetLeft;
+  offsetY = e.clientY - card.offsetTop;
+});
+
+document.addEventListener("mousemove", e => {
+  if (isDragging) {
+    card.style.left = (e.clientX - offsetX) + "px";
+    card.style.top = (e.clientY - offsetY) + "px";
+  }
+});
+
+document.addEventListener("mouseup", () => {
+  isDragging = false;
+});
 </script>
 
 </body>
