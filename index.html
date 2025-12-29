@@ -2,357 +2,162 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>exuric Profile</title>
-
-<!-- Cursive font -->
-<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
-
+<title>BlockBlast</title>
 <style>
 body {
   margin: 0;
   overflow: hidden;
   font-family: Arial, sans-serif;
-  background: #0b0b0b;
+  background: linear-gradient(#0b0b0b, #1a1a1a);
   color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  position: relative;
-  user-select: none;
-}
-
-/* Glass card with hover shine + fade-in */
-.card {
-  width: 360px;
-  backdrop-filter: blur(14px);
-  background: rgba(255,255,255,0.06);
-  border-radius: 25px;
-  padding: 25px 20px;
-  position: absolute;
-  cursor: move;
-  box-shadow: 0 0 40px rgba(0,0,0,0.8);
-  z-index: 10;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: box-shadow 0.3s ease, opacity 1s ease, transform 1s ease;
-}
-
-.card.loaded {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.card::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    120deg, 
-    rgba(255,255,255,0.05) 0%, 
-    rgba(255,255,255,0.3) 50%, 
-    rgba(255,255,255,0.05) 100%
-  );
-  transform: rotate(45deg) translateX(-100%);
-  transition: transform 0.7s ease;
-}
-
-.card:hover::before {
-  transform: rotate(45deg) translateX(100%);
-}
-
-.card:hover {
-  box-shadow: 0 0 60px rgba(0,0,0,1);
-}
-
-/* Name in cursive */
-.username {
-  font-family: 'Great Vibes', cursive;
-  font-size: 30px;
-  margin-bottom: 12px;
   text-align: center;
 }
 
-/* Socials */
-.socials {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-top: 10px;
-  gap: 6px;
+#gameCanvas {
+  background: #111;
+  display: block;
+  margin: 0 auto;
+  border: 2px solid #555;
+  border-radius: 15px;
 }
 
-.social-item {
-  display: flex;
-  align-items: center;
+h1 {
+  margin: 10px 0;
+  font-size: 32px;
+  color: #00ffea;
+  text-shadow: 0 0 10px #00ffea;
+}
+
+#scoreboard {
+  margin: 10px 0;
+  font-size: 20px;
+}
+
+#adBanner {
+  width: 90%;
+  height: 90px;
+  background: #222;
+  color: #aaa;
+  margin: 10px auto;
+  line-height: 90px;
+  font-size: 24px;
+  border-radius: 12px;
+  border: 2px dashed #555;
+}
+
+button {
+  padding: 10px 20px;
   font-size: 16px;
-}
-
-.social-item img {
-  width: 20px;
-  height: 20px;
-  margin-right: 8px;
-}
-
-/* Viewer counter */
-.viewers {
-  margin-top: 15px;
-  font-size: 16px;
+  border-radius: 8px;
+  border: none;
   cursor: pointer;
-  user-select: none;
-  transition: transform 0.2s ease;
-  text-align: center;
+  background: #00ffea;
+  color: #000;
+  margin: 5px;
 }
-.viewers:hover {
-  transform: scale(1.1);
-}
-
-/* Spotify section */
-.spotify {
-  margin-top: 15px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: rgba(255,255,255,0.08);
-  padding: 8px 10px;
-  border-radius: 12px;
-  transition: transform 0.2s ease;
-}
-
-.spotify:hover {
-  transform: scale(1.03);
-}
-
-.spotify img {
-  width: 50px;
-  height: 50px;
-  border-radius: 6px;
-}
-
-.spotify-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.spotify-info .song {
-  font-weight: bold;
-  font-size: 14px;
-}
-
-.spotify-info .artist {
-  font-size: 12px;
-  opacity: 0.8;
-}
-
-/* Playlist iframe */
-.spotify-iframe {
-  width: 100%;
-  min-height: 360px;
-  margin-top: 15px;
-  border-radius: 12px;
-  border: 0;
-}
-
-/* Bottom text */
-.bottom-text {
-  position: absolute;
-  bottom: 10px;
-  font-size: 14px;
-  opacity: 0.7;
-  width: 100%;
-  text-align: center;
-  z-index: 10;
-}
-
-/* Stars */
-.star {
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  background: white;
-  border-radius: 50%;
-  opacity: 0.8;
-  animation: fall linear infinite;
-}
-
-/* Twinkling animation */
-@keyframes fall {
-  to { transform: translateY(100vh); }
-}
-
-/* Waves - multi-layer */
-.wave {
-  position: absolute;
-  bottom: 0;
-  width: 200%;
-  height: 200px;
-  background: rgba(0, 50, 200, 0.3);
-  border-radius: 50%;
-  animation: wave 4s ease-in-out infinite alternate;
-  z-index: 1;
-}
-
-.wave.wave2 {
-  bottom: -20px;
-  background: rgba(0, 100, 255, 0.2);
-  animation-duration: 6s;
-}
-
-.wave.wave3 {
-  bottom: -40px;
-  background: rgba(0, 150, 255, 0.15);
-  animation-duration: 8s;
-}
-
-@keyframes wave {
-  0% { transform: translateX(0) translateY(0) rotate(0deg); }
-  50% { transform: translateX(-50%) translateY(10px) rotate(3deg); }
-  100% { transform: translateX(0) translateY(0) rotate(0deg); }
+button:hover {
+  background: #00c2b8;
 }
 </style>
 </head>
 <body>
 
-<!-- Stars -->
-<div id="stars-container"></div>
-
-<!-- Waves -->
-<div class="wave"></div>
-<div class="wave wave2"></div>
-<div class="wave wave3"></div>
-
-<!-- Profile card -->
-<div class="card" id="profileCard">
-  <div class="username">We will both burn in the fire</div>
-
-  <!-- Socials -->
-  <div class="socials">
-    <div class="social-item">
-      <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg" alt="Discord Logo">
-      .exuric
-    </div>
-    <div class="social-item">
-      <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/mail-dot-ru.svg" alt="Mail Logo">
-      exur1cbuisnesss
-    </div>
-  </div>
-
-  <!-- Viewer counter -->
-  <div class="viewers">👁 <span id="viewerCount">499</span> viewers</div>
-
-  <!-- Spotify -->
-  <div class="spotify" id="spotify">
-    <img id="spotify-album" src="" alt="Album Cover">
-    <div class="spotify-info">
-      <div class="song" id="spotify-song">Loading...</div>
-      <div class="artist" id="spotify-artist"></div>
-    </div>
-  </div>
-
-  <!-- Playlist iframe -->
-  <iframe class="spotify-iframe" src="https://open.spotify.com/embed/playlist/1unLlHUdJAHd4FzSxpqf2x?utm_source=generator&theme=0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-</div>
-
-<!-- Bottom text -->
-<div class="bottom-text">.exuric on Discord</div>
+<h1>BlockBlast</h1>
+<div id="scoreboard">Score: 0 | Lives: 3</div>
+<canvas id="gameCanvas" width="600" height="400"></canvas>
+<div id="adBanner">ADVERTISEMENT PLACEHOLDER</div>
+<button id="restartBtn">Restart Game</button>
 
 <script>
-// ===== Viewer Count =====
-let viewers = localStorage.getItem("viewers") || 499;
-const viewerEl = document.getElementById("viewerCount");
-viewerEl.textContent = viewers;
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-setInterval(() => {
-  viewers++;
-  localStorage.setItem("viewers", viewers);
-  viewerEl.textContent = viewers;
-}, 3600000);
+let score = 0;
+let lives = 3;
+let blocks = [];
+let gameInterval;
+let spawnInterval;
 
-viewerEl.parentElement.addEventListener("click", () => {
-  viewers++;
-  localStorage.setItem("viewers", viewers);
-  viewerEl.textContent = viewers;
-  viewerEl.parentElement.style.transform = "scale(1.2)";
-  setTimeout(() => { viewerEl.parentElement.style.transform = "scale(1)"; }, 200);
-});
+// Block properties
+const blockWidth = 50;
+const blockHeight = 50;
+const blockSpeed = 2;
 
-// ===== Stars =====
-const starsContainer = document.getElementById("stars-container");
-for(let i=0;i<120;i++){
-  const star = document.createElement("div");
-  star.className = "star";
-  star.style.top = Math.random()*100 + "vh";
-  star.style.left = Math.random()*100 + "vw";
-  star.style.animationDuration = (3 + Math.random()*5) + "s";
-  star.style.opacity = Math.random();
-  star.style.width = star.style.height = (1 + Math.random()*2) + "px";
-  starsContainer.appendChild(star);
+// Spawn a new block at random x position
+function spawnBlock() {
+  const x = Math.random() * (canvas.width - blockWidth);
+  blocks.push({ x, y: -blockHeight, width: blockWidth, height: blockHeight });
 }
 
-// ===== Draggable card =====
-const card = document.getElementById("profileCard");
-let isDragging = false, offsetX, offsetY;
-card.addEventListener("mousedown", e => {
-  isDragging = true;
-  offsetX = e.clientX - card.offsetLeft;
-  offsetY = e.clientY - card.offsetTop;
-});
-document.addEventListener("mousemove", e => {
-  if(isDragging){
-    card.style.left = (e.clientX - offsetX) + "px";
-    card.style.top = (e.clientY - offsetY) + "px";
+// Update game state
+function update() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw blocks
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    const b = blocks[i];
+    b.y += blockSpeed;
+    ctx.fillStyle = '#ff0055';
+    ctx.fillRect(b.x, b.y, b.width, b.height);
+
+    // If block reaches bottom
+    if (b.y + b.height >= canvas.height) {
+      blocks.splice(i, 1);
+      lives--;
+      updateScoreboard();
+      if (lives <= 0) {
+        endGame();
+      }
+    }
+  }
+}
+
+// Update scoreboard text
+function updateScoreboard() {
+  document.getElementById('scoreboard').textContent = `Score: ${score} | Lives: ${lives}`;
+}
+
+// Click event to destroy blocks
+canvas.addEventListener('click', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    const b = blocks[i];
+    if (mx > b.x && mx < b.x + b.width && my > b.y && my < b.y + b.height) {
+      blocks.splice(i, 1);
+      score += 10;
+      updateScoreboard();
+      break;
+    }
   }
 });
-document.addEventListener("mouseup", () => { isDragging = false; });
 
-// Fade-in card
-window.onload = () => { card.classList.add('loaded'); };
-
-// ===== Spotify API =====
-const token = 'BQDGEcPsDvrJx7Za8yC9r2IjP1aCnchCX-7YFkw07-lDp5eVwo1o_WzKplDXlDtlgFUn3yROjRmuLe356injenUGMCrvEMfrlTyMvXRNWYj1yXYpAWoM2s62umAOjG6iymTdeKd_VoPPzlTtM2V-YUcMXSdfhNLreiFbKQ7h1r7AVoEU3MnpFPCRAfmMZf1shTS1v9TyS6O5efi3YSxNLnns63JDoGageHRs8Bx0U4SOQzWlrP7Rqd8nIq1c6T5FMmv3VLmC6aLgsIbcnJa3bN_TmMkkp66eH196HzXsmkdbg3ZiEn5MPn5KLIocczhB6cQO';
-const lastTracksUri = [
-  'spotify:track:2b2fkSqjOd3Bx0MxdHsc6O',
-  'spotify:track:5uQOauh47VFt3B2kV9kRXw',
-  'spotify:track:4nds6JYKbzMdpXwuINhSEZ',
-  'spotify:track:6pUG4852ppbwaLCNLCwnib',
-  'spotify:track:1qRgawvZQijjgAf3DoNWb6'
-];
-
-async function fetchWebApi(endpoint, method='GET', body=null){
-  const res = await fetch(`https://api.spotify.com/${endpoint}`,{
-    headers:{Authorization:`Bearer ${token}`},
-    method,
-    body: body?JSON.stringify(body):null
-  });
-  return res.json();
+// Start game
+function startGame() {
+  blocks = [];
+  score = 0;
+  lives = 3;
+  updateScoreboard();
+  gameInterval = setInterval(update, 20);
+  spawnInterval = setInterval(spawnBlock, 1000);
 }
 
-async function getCurrentlyPlaying(){
-  try{
-    const data = await fetchWebApi('v1/me/player/currently-playing');
-    if(data && data.item){
-      document.getElementById('spotify-song').textContent = data.item.name;
-      document.getElementById('spotify-artist').textContent = data.item.artists.map(a=>a.name).join(', ');
-      document.getElementById('spotify-album').src = data.item.album.images[0].url;
-    } else {
-      // Show last playlist track if nothing playing
-      const res = await fetchWebApi(`v1/tracks/${lastTracksUri[0].split(':')[2]}`);
-      document.getElementById('spotify-song').textContent = res.name;
-      document.getElementById('spotify-artist').textContent = res.artists.map(a=>a.name).join(', ');
-      document.getElementById('spotify-album').src = res.album.images[0].url;
-    }
-  }catch(e){ console.error(e); }
+// End game
+function endGame() {
+  clearInterval(gameInterval);
+  clearInterval(spawnInterval);
+  alert(`Game Over! Your score: ${score}`);
 }
 
-// Update Spotify every 15s
-getCurrentlyPlaying();
-setInterval(getCurrentlyPlaying, 15000);
+// Restart button
+document.getElementById('restartBtn').addEventListener('click', () => {
+  startGame();
+});
+
+// Start immediately
+startGame();
 </script>
 </body>
 </html>
