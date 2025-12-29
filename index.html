@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>My Profile</title>
+<title>exuric</title>
 
 <style>
 body {
@@ -70,21 +70,19 @@ body {
   </div>
 
   <div class="viewers">👁 <span id="viewerCount">499</span> viewers</div>
-  <div class="username">Discord Profile</div>
+  <div class="username">exuric</div>
 </div>
 
 <script>
 const USER_ID = "868570377083818074";
 
-/* Load Discord PFP */
+/* FIXED DISCORD PFP (WORKS) */
 document.getElementById("pfp").src =
-  `https://cdn.discordapp.com/avatars/${USER_ID}.png?size=256`;
+  `https://discord.c99.nl/widget/theme-4/${USER_ID}.png`;
 
-/* Live Discord Presence */
+/* LIVE DISCORD STATUS */
 async function updateStatus() {
-  const res = await fetch(
-    `https://api.lanyard.rest/v1/users/${USER_ID}`
-  );
+  const res = await fetch(`https://api.lanyard.rest/v1/users/${USER_ID}`);
   const data = await res.json();
   const status = data.data.discord_status;
 
@@ -102,12 +100,9 @@ async function updateStatus() {
 updateStatus();
 setInterval(updateStatus, 15000);
 
-/* Viewer count system */
+/* VIEWER COUNT */
 let viewers = localStorage.getItem("viewers");
-
-if (!viewers) {
-  viewers = 499;
-}
+if (!viewers) viewers = 499;
 
 document.getElementById("viewerCount").textContent = viewers;
 
@@ -115,8 +110,9 @@ setInterval(() => {
   viewers++;
   localStorage.setItem("viewers", viewers);
   document.getElementById("viewerCount").textContent = viewers;
-}, 3600000); // 1 hour
+}, 3600000);
 </script>
 
 </body>
 </html>
+
