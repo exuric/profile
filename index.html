@@ -24,7 +24,7 @@ body {
 
 /* Glassy movable profile card */
 .card {
-  width: 350px;
+  width: 360px;
   backdrop-filter: blur(14px);
   background: rgba(255,255,255,0.06);
   border-radius: 25px;
@@ -33,7 +33,29 @@ body {
   cursor: move;
   box-shadow: 0 0 40px rgba(0,0,0,0.8);
   z-index: 10;
-  transition: box-shadow 0.2s ease;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    120deg, 
+    rgba(255,255,255,0.05) 0%, 
+    rgba(255,255,255,0.3) 50%, 
+    rgba(255,255,255,0.05) 100%
+  );
+  transform: rotate(45deg) translateX(-100%);
+  transition: transform 0.7s ease;
+}
+
+.card:hover::before {
+  transform: rotate(45deg) translateX(100%);
 }
 
 .card:hover {
@@ -192,11 +214,11 @@ body {
   <div class="viewers">👁 <span id="viewerCount">499</span> viewers</div>
 
   <!-- Spotify Now Listening -->
-  <div class="spotify">
-    <img src="https://i.scdn.co/image/ab67616d0000b273c2a1aa2c5c7b7d8e6e4f5f3d" alt="Album Cover">
+  <div class="spotify" id="spotify">
+    <img id="spotify-album" src="" alt="Album Cover">
     <div class="spotify-info">
-      <div class="song">Can’t Wait</div>
-      <div class="artist">Drake</div>
+      <div class="song" id="spotify-song">Loading...</div>
+      <div class="artist" id="spotify-artist"></div>
     </div>
   </div>
 </div>
@@ -205,31 +227,27 @@ body {
 <div class="bottom-text">.exuric on Discord</div>
 
 <script>
-/* ========== VIEWER COUNT WITH CLICK ANIMATION ========== */
+// ===== Viewer Count =====
 let viewers = localStorage.getItem("viewers");
 if (!viewers) viewers = 499;
 const viewerEl = document.getElementById("viewerCount");
 viewerEl.textContent = viewers;
 
-// Increment hourly automatically
 setInterval(() => {
   viewers++;
   localStorage.setItem("viewers", viewers);
   viewerEl.textContent = viewers;
 }, 3600000);
 
-// Increment on click with pop animation
 viewerEl.parentElement.addEventListener("click", () => {
   viewers++;
   localStorage.setItem("viewers", viewers);
   viewerEl.textContent = viewers;
   viewerEl.parentElement.style.transform = "scale(1.2)";
-  setTimeout(() => {
-    viewerEl.parentElement.style.transform = "scale(1)";
-  }, 200);
+  setTimeout(() => { viewerEl.parentElement.style.transform = "scale(1)"; }, 200);
 });
 
-/* ========== GENERATE STARS ========== */
+// ===== Generate Stars =====
 const starsContainer = document.getElementById("stars-container");
 for(let i=0;i<120;i++){
   const star = document.createElement("div");
@@ -242,7 +260,7 @@ for(let i=0;i<120;i++){
   starsContainer.appendChild(star);
 }
 
-/* ========== MAKE CARD DRAGGABLE ========== */
+// ===== Draggable Card =====
 const card = document.getElementById("profileCard");
 let isDragging = false;
 let offsetX, offsetY;
@@ -260,9 +278,40 @@ document.addEventListener("mousemove", e => {
   }
 });
 
-document.addEventListener("mouseup", () => {
-  isDragging = false;
-});
+document.addEventListener("mouseup", () => { isDragging = false; });
+
+// ===== Spotify API =====
+const token = 'BQDGEcPsDvrJx7Za8yC9r2IjP1aCnchCX-7YFkw07-lDp5eVwo1o_WzKplDXlDtlgFUn3yROjRmuLe356injenUGMCrvEMfrlTyMvXRNWYj1yXYpAWoM2s62umAOjG6iymTdeKd_VoPPzlTtM2V-YUcMXSdfhNLreiFbKQ7h1r7AVoEU3MnpFPCRAfmMZf1shTS1v9TyS6O5efi3YSxNLnns63JDoGageHRs8Bx0U4SOQzWlrP7Rqd8nIq1c6T5FMmv3VLmC6aLgsIbcnJa3bN_TmMkkp66eH196HzXsmkdbg3ZiEn5MPn5KLIocczhB6cQO';
+
+async function fetchWebApi(endpoint, method='GET', body=null){
+  const res = await fetch(`https://api.spotify.com/${endpoint}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    method,
+    body: body ? JSON.stringify(body) : null
+  });
+  return res.json();
+}
+
+async function getCurrentlyPlaying(){
+  try {
+    const data = await fetchWebApi('v1/me/player/currently-playing');
+    if(data && data.item){
+      document.getElementById('spotify-song').textContent = data.item.name;
+      document.getElementById('spotify-artist').textContent = data.item.artists.map(a=>a.name).join(', ');
+      document.getElementById('spotify-album').src = data.item.album.images[0].url;
+    } else {
+      document.getElementById('spotify-song').textContent = "Nothing playing";
+      document.getElementById('spotify-artist').textContent = "";
+      document.getElementById('spotify-album').src = "";
+    }
+  } catch(e){
+    console.error(e);
+  }
+}
+
+// Update every 15 seconds
+getCurrentlyPlaying();
+setInterval(getCurrentlyPlaying, 15000);
 </script>
 
 </body>
