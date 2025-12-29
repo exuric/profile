@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Profile Card</title>
+<title>exuric Profile</title>
 
 <!-- Cursive font -->
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
@@ -24,22 +24,27 @@ body {
 
 /* Glassy movable profile card */
 .card {
-  width: 320px;
-  backdrop-filter: blur(12px);
-  background: rgba(255,255,255,0.05);
-  border-radius: 20px;
-  padding: 25px;
+  width: 350px;
+  backdrop-filter: blur(14px);
+  background: rgba(255,255,255,0.06);
+  border-radius: 25px;
+  padding: 25px 20px;
   position: absolute;
   cursor: move;
-  box-shadow: 0 0 30px rgba(0,0,0,0.7);
+  box-shadow: 0 0 40px rgba(0,0,0,0.8);
   z-index: 10;
+  transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 0 60px rgba(0,0,0,1);
 }
 
 /* Name in cursive */
 .username {
   font-family: 'Great Vibes', cursive;
-  font-size: 28px;
-  margin-bottom: 10px;
+  font-size: 30px;
+  margin-bottom: 12px;
   text-align: center;
 }
 
@@ -75,6 +80,44 @@ body {
 }
 .viewers:hover {
   transform: scale(1.1);
+}
+
+/* Spotify section */
+.spotify {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,0.08);
+  padding: 8px 10px;
+  border-radius: 12px;
+  transition: transform 0.2s ease;
+}
+
+.spotify:hover {
+  transform: scale(1.03);
+}
+
+.spotify img {
+  width: 50px;
+  height: 50px;
+  border-radius: 6px;
+}
+
+.spotify-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.spotify-info .song {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.spotify-info .artist {
+  font-size: 12px;
+  opacity: 0.8;
 }
 
 /* Bottom text */
@@ -133,6 +176,7 @@ body {
 <div class="card" id="profileCard">
   <div class="username">We will both burn in the fire</div>
 
+  <!-- Socials -->
   <div class="socials">
     <div class="social-item">
       <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg" alt="Discord Logo">
@@ -144,7 +188,17 @@ body {
     </div>
   </div>
 
+  <!-- Viewer counter -->
   <div class="viewers">👁 <span id="viewerCount">499</span> viewers</div>
+
+  <!-- Spotify Now Listening -->
+  <div class="spotify">
+    <img src="https://i.scdn.co/image/ab67616d0000b273c2a1aa2c5c7b7d8e6e4f5f3d" alt="Album Cover">
+    <div class="spotify-info">
+      <div class="song">Can’t Wait</div>
+      <div class="artist">Drake</div>
+    </div>
+  </div>
 </div>
 
 <!-- Bottom text -->
@@ -157,7 +211,7 @@ if (!viewers) viewers = 499;
 const viewerEl = document.getElementById("viewerCount");
 viewerEl.textContent = viewers;
 
-// Increment every hour automatically
+// Increment hourly automatically
 setInterval(() => {
   viewers++;
   localStorage.setItem("viewers", viewers);
