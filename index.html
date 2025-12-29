@@ -6,25 +6,31 @@
 
 <style>
 body {
+  margin: 0;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
   background: #0b0b0b;
   color: white;
-  font-family: Arial, sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  margin: 0;
+  position: relative;
 }
 
+/* Card */
 .card {
-  background: #121212;
+  background: rgba(18,18,18,0.8);
   padding: 25px;
   border-radius: 16px;
   width: 280px;
   text-align: center;
   box-shadow: 0 0 30px rgba(0,0,0,0.7);
+  z-index: 10;
+  position: relative;
 }
 
+/* PFP + status */
 .pfp-wrap {
   position: relative;
   width: 120px;
@@ -44,9 +50,10 @@ body {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 3px solid #121212;
+  border: 3px solid rgba(18,18,18,1);
 }
 
+/* Viewers / username */
 .viewers {
   margin-top: 10px;
   font-size: 14px;
@@ -58,11 +65,62 @@ body {
   font-size: 18px;
   font-weight: bold;
 }
+
+/* Bottom Discord text */
+.bottom-text {
+  position: absolute;
+  bottom: 10px;
+  font-size: 14px;
+  opacity: 0.7;
+  width: 100%;
+  text-align: center;
+  z-index: 10;
+}
+
+/* Stars */
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: fall linear infinite;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(100vh);
+  }
+}
+
+/* Wave background */
+.wave {
+  position: absolute;
+  bottom: 0;
+  width: 200%;
+  height: 200px;
+  background: rgba(0, 50, 200, 0.3);
+  border-radius: 50%;
+  animation: wave 4s ease-in-out infinite alternate;
+  z-index: 1;
+}
+
+@keyframes wave {
+  0% { transform: translateX(0) translateY(0) rotate(0deg); }
+  50% { transform: translateX(-50%) translateY(10px) rotate(3deg); }
+  100% { transform: translateX(0) translateY(0) rotate(0deg); }
+}
 </style>
 </head>
 
 <body>
 
+<!-- Stars + Wave -->
+<div id="stars-container"></div>
+<div class="wave"></div>
+
+<!-- Card -->
 <div class="card">
   <div class="pfp-wrap">
     <img id="pfp" class="pfp">
@@ -73,14 +131,17 @@ body {
   <div class="username">exuric</div>
 </div>
 
+<!-- Bottom Discord text -->
+<div class="bottom-text">.exuric on Discord</div>
+
 <script>
 const USER_ID = "868570377083818074";
 
-/* FIXED DISCORD PFP (WORKS) */
+/* Discord PFP */
 document.getElementById("pfp").src =
   `https://discord.c99.nl/widget/theme-4/${USER_ID}.png`;
 
-/* LIVE DISCORD STATUS */
+/* Live Discord status */
 async function updateStatus() {
   const res = await fetch(`https://api.lanyard.rest/v1/users/${USER_ID}`);
   const data = await res.json();
@@ -100,7 +161,7 @@ async function updateStatus() {
 updateStatus();
 setInterval(updateStatus, 15000);
 
-/* VIEWER COUNT */
+/* Viewer count */
 let viewers = localStorage.getItem("viewers");
 if (!viewers) viewers = 499;
 
@@ -111,8 +172,20 @@ setInterval(() => {
   localStorage.setItem("viewers", viewers);
   document.getElementById("viewerCount").textContent = viewers;
 }, 3600000);
+
+/* Generate stars */
+const starsContainer = document.getElementById("stars-container");
+for(let i=0;i<100;i++){
+  const star = document.createElement("div");
+  star.className = "star";
+  star.style.top = Math.random()*100 + "vh";
+  star.style.left = Math.random()*100 + "vw";
+  star.style.animationDuration = (3 + Math.random()*5) + "s";
+  star.style.opacity = Math.random();
+  star.style.width = star.style.height = (1 + Math.random()*2) + "px";
+  starsContainer.appendChild(star);
+}
 </script>
 
 </body>
 </html>
-
