@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Profile</title>
+
+<style>
+body {
+  background: #0b0b0b;
+  color: white;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.card {
+  background: #121212;
+  padding: 25px;
+  border-radius: 16px;
+  width: 280px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(0,0,0,0.7);
+}
+
+.pfp-wrap {
+  position: relative;
+  width: 120px;
+  margin: auto;
+}
+
+.pfp {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+}
+
+.status {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid #121212;
+}
+
+.viewers {
+  margin-top: 10px;
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.username {
+  margin-top: 12px;
+  font-size: 18px;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <div class="pfp-wrap">
+    <img id="pfp" class="pfp">
+    <div id="statusDot" class="status"></div>
+  </div>
+
+  <div class="viewers">👁 <span id="viewerCount">499</span> viewers</div>
+  <div class="username">Discord Profile</div>
+</div>
+
+<script>
+const USER_ID = "868570377083818074";
+
+/* Load Discord PFP */
+document.getElementById("pfp").src =
+  `https://cdn.discordapp.com/avatars/${USER_ID}.png?size=256`;
+
+/* Live Discord Presence */
+async function updateStatus() {
+  const res = await fetch(
+    `https://api.lanyard.rest/v1/users/${USER_ID}`
+  );
+  const data = await res.json();
+  const status = data.data.discord_status;
+
+  const colors = {
+    online: "#3ba55c",
+    idle: "#faa81a",
+    dnd: "#ed4245",
+    offline: "#747f8d"
+  };
+
+  document.getElementById("statusDot").style.background =
+    colors[status] || colors.offline;
+}
+
+updateStatus();
+setInterval(updateStatus, 15000);
+
+/* Viewer count system */
+let viewers = localStorage.getItem("viewers");
+
+if (!viewers) {
+  viewers = 499;
+}
+
+document.getElementById("viewerCount").textContent = viewers;
+
+setInterval(() => {
+  viewers++;
+  localStorage.setItem("viewers", viewers);
+  document.getElementById("viewerCount").textContent = viewers;
+}, 3600000); // 1 hour
+</script>
+
+</body>
+</html>
