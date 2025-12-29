@@ -22,7 +22,7 @@ body {
   user-select: none;
 }
 
-/* Glassy movable profile card */
+/* Glass card with hover shine + fade-in */
 .card {
   width: 360px;
   backdrop-filter: blur(14px);
@@ -34,7 +34,14 @@ body {
   box-shadow: 0 0 40px rgba(0,0,0,0.8);
   z-index: 10;
   overflow: hidden;
-  transition: box-shadow 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: box-shadow 0.3s ease, opacity 1s ease, transform 1s ease;
+}
+
+.card.loaded {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .card::before {
@@ -70,7 +77,7 @@ body {
   text-align: center;
 }
 
-/* Socials list */
+/* Socials */
 .socials {
   display: flex;
   flex-direction: column;
@@ -142,6 +149,15 @@ body {
   opacity: 0.8;
 }
 
+/* Playlist iframe */
+.spotify-iframe {
+  width: 100%;
+  min-height: 360px;
+  margin-top: 15px;
+  border-radius: 12px;
+  border: 0;
+}
+
 /* Bottom text */
 .bottom-text {
   position: absolute;
@@ -164,11 +180,12 @@ body {
   animation: fall linear infinite;
 }
 
+/* Twinkling animation */
 @keyframes fall {
   to { transform: translateY(100vh); }
 }
 
-/* Wave background */
+/* Waves - multi-layer */
 .wave {
   position: absolute;
   bottom: 0;
@@ -180,6 +197,18 @@ body {
   z-index: 1;
 }
 
+.wave.wave2 {
+  bottom: -20px;
+  background: rgba(0, 100, 255, 0.2);
+  animation-duration: 6s;
+}
+
+.wave.wave3 {
+  bottom: -40px;
+  background: rgba(0, 150, 255, 0.15);
+  animation-duration: 8s;
+}
+
 @keyframes wave {
   0% { transform: translateX(0) translateY(0) rotate(0deg); }
   50% { transform: translateX(-50%) translateY(10px) rotate(3deg); }
@@ -187,14 +216,17 @@ body {
 }
 </style>
 </head>
-
 <body>
 
-<!-- Stars + Wave -->
+<!-- Stars -->
 <div id="stars-container"></div>
-<div class="wave"></div>
 
-<!-- Movable Glass Profile Card -->
+<!-- Waves -->
+<div class="wave"></div>
+<div class="wave wave2"></div>
+<div class="wave wave3"></div>
+
+<!-- Profile card -->
 <div class="card" id="profileCard">
   <div class="username">We will both burn in the fire</div>
 
@@ -213,7 +245,7 @@ body {
   <!-- Viewer counter -->
   <div class="viewers">👁 <span id="viewerCount">499</span> viewers</div>
 
-  <!-- Spotify Now Listening -->
+  <!-- Spotify -->
   <div class="spotify" id="spotify">
     <img id="spotify-album" src="" alt="Album Cover">
     <div class="spotify-info">
@@ -221,6 +253,10 @@ body {
       <div class="artist" id="spotify-artist"></div>
     </div>
   </div>
+
+  <!-- Playlist iframe -->
+  <iframe class="spotify-iframe" src="https://open.spotify.com/embed/playlist/1unLlHUdJAHd4FzSxpqf2x?utm_source=generator&theme=0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
 </div>
 
 <!-- Bottom text -->
@@ -228,8 +264,7 @@ body {
 
 <script>
 // ===== Viewer Count =====
-let viewers = localStorage.getItem("viewers");
-if (!viewers) viewers = 499;
+let viewers = localStorage.getItem("viewers") || 499;
 const viewerEl = document.getElementById("viewerCount");
 viewerEl.textContent = viewers;
 
@@ -247,7 +282,7 @@ viewerEl.parentElement.addEventListener("click", () => {
   setTimeout(() => { viewerEl.parentElement.style.transform = "scale(1)"; }, 200);
 });
 
-// ===== Generate Stars =====
+// ===== Stars =====
 const starsContainer = document.getElementById("stars-container");
 for(let i=0;i<120;i++){
   const star = document.createElement("div");
@@ -260,59 +295,64 @@ for(let i=0;i<120;i++){
   starsContainer.appendChild(star);
 }
 
-// ===== Draggable Card =====
+// ===== Draggable card =====
 const card = document.getElementById("profileCard");
-let isDragging = false;
-let offsetX, offsetY;
-
+let isDragging = false, offsetX, offsetY;
 card.addEventListener("mousedown", e => {
   isDragging = true;
   offsetX = e.clientX - card.offsetLeft;
   offsetY = e.clientY - card.offsetTop;
 });
-
 document.addEventListener("mousemove", e => {
-  if (isDragging) {
+  if(isDragging){
     card.style.left = (e.clientX - offsetX) + "px";
     card.style.top = (e.clientY - offsetY) + "px";
   }
 });
-
 document.addEventListener("mouseup", () => { isDragging = false; });
+
+// Fade-in card
+window.onload = () => { card.classList.add('loaded'); };
 
 // ===== Spotify API =====
 const token = 'BQDGEcPsDvrJx7Za8yC9r2IjP1aCnchCX-7YFkw07-lDp5eVwo1o_WzKplDXlDtlgFUn3yROjRmuLe356injenUGMCrvEMfrlTyMvXRNWYj1yXYpAWoM2s62umAOjG6iymTdeKd_VoPPzlTtM2V-YUcMXSdfhNLreiFbKQ7h1r7AVoEU3MnpFPCRAfmMZf1shTS1v9TyS6O5efi3YSxNLnns63JDoGageHRs8Bx0U4SOQzWlrP7Rqd8nIq1c6T5FMmv3VLmC6aLgsIbcnJa3bN_TmMkkp66eH196HzXsmkdbg3ZiEn5MPn5KLIocczhB6cQO';
+const lastTracksUri = [
+  'spotify:track:2b2fkSqjOd3Bx0MxdHsc6O',
+  'spotify:track:5uQOauh47VFt3B2kV9kRXw',
+  'spotify:track:4nds6JYKbzMdpXwuINhSEZ',
+  'spotify:track:6pUG4852ppbwaLCNLCwnib',
+  'spotify:track:1qRgawvZQijjgAf3DoNWb6'
+];
 
 async function fetchWebApi(endpoint, method='GET', body=null){
-  const res = await fetch(`https://api.spotify.com/${endpoint}`, {
-    headers: { Authorization: `Bearer ${token}` },
+  const res = await fetch(`https://api.spotify.com/${endpoint}`,{
+    headers:{Authorization:`Bearer ${token}`},
     method,
-    body: body ? JSON.stringify(body) : null
+    body: body?JSON.stringify(body):null
   });
   return res.json();
 }
 
 async function getCurrentlyPlaying(){
-  try {
+  try{
     const data = await fetchWebApi('v1/me/player/currently-playing');
     if(data && data.item){
       document.getElementById('spotify-song').textContent = data.item.name;
       document.getElementById('spotify-artist').textContent = data.item.artists.map(a=>a.name).join(', ');
       document.getElementById('spotify-album').src = data.item.album.images[0].url;
     } else {
-      document.getElementById('spotify-song').textContent = "Nothing playing";
-      document.getElementById('spotify-artist').textContent = "";
-      document.getElementById('spotify-album').src = "";
+      // Show last playlist track if nothing playing
+      const res = await fetchWebApi(`v1/tracks/${lastTracksUri[0].split(':')[2]}`);
+      document.getElementById('spotify-song').textContent = res.name;
+      document.getElementById('spotify-artist').textContent = res.artists.map(a=>a.name).join(', ');
+      document.getElementById('spotify-album').src = res.album.images[0].url;
     }
-  } catch(e){
-    console.error(e);
-  }
+  }catch(e){ console.error(e); }
 }
 
-// Update every 15 seconds
+// Update Spotify every 15s
 getCurrentlyPlaying();
 setInterval(getCurrentlyPlaying, 15000);
 </script>
-
 </body>
 </html>
