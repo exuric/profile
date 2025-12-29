@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <title>exuric</title>
 
+<!-- Cursive font -->
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
 <style>
 body {
   margin: 0;
@@ -20,53 +23,58 @@ body {
 
 /* Card */
 .card {
-  background: rgba(18,18,18,0.8);
-  padding: 25px;
-  border-radius: 16px;
-  width: 280px;
+  background: rgba(18,18,18,0.85);
+  padding: 30px 25px;
+  border-radius: 20px;
+  width: 300px;
   text-align: center;
-  box-shadow: 0 0 30px rgba(0,0,0,0.7);
+  box-shadow: 0 0 40px rgba(0,0,0,0.8);
   z-index: 10;
   position: relative;
+  overflow: hidden;
 }
 
-/* PFP + status */
-.pfp-wrap {
-  position: relative;
-  width: 120px;
-  margin: auto;
-}
-
-.pfp {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-}
-
-.status {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 3px solid rgba(18,18,18,1);
-}
-
-/* Viewers / username */
-.viewers {
-  margin-top: 10px;
-  font-size: 14px;
-  opacity: 0.85;
-}
-
+/* Profile name (cursive) */
 .username {
-  margin-top: 12px;
-  font-size: 18px;
-  font-weight: bold;
+  font-family: 'Great Vibes', cursive;
+  font-size: 32px;
+  margin-bottom: 12px;
 }
 
-/* Bottom Discord text */
+/* Social list */
+.socials {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.social-item {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+  font-size: 16px;
+}
+
+.social-item img {
+  width: 22px;
+  height: 22px;
+  margin-right: 8px;
+}
+
+/* Viewer counter */
+.viewers {
+  margin-top: 15px;
+  font-size: 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.2s ease;
+}
+.viewers:hover {
+  transform: scale(1.1);
+}
+
+/* Bottom text */
 .bottom-text {
   position: absolute;
   bottom: 10px;
@@ -122,76 +130,55 @@ body {
 
 <!-- Card -->
 <div class="card">
-  <div class="pfp-wrap">
-    <img id="pfp" class="pfp">
-    <div id="statusDot" class="status"></div>
+  <div class="username">exuric</div>
+
+  <!-- Social list -->
+  <div class="socials">
+    <div class="social-item">
+      <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg" alt="Discord Logo">
+      .exuric
+    </div>
+    <!-- Add more socials below if you want -->
   </div>
 
+  <!-- Viewer counter -->
   <div class="viewers">👁 <span id="viewerCount">499</span> viewers</div>
-  <div class="username">exuric</div>
 </div>
 
-<!-- Bottom Discord text -->
+<!-- Bottom text -->
 <div class="bottom-text">.exuric on Discord</div>
 
 <script>
-const USER_ID = "868570377083818074";
-
-/* ========== GET REAL DISCORD PFP ==========
-   Using Discord CDN + Lanyard API for avatar hash
-========================================= */
-async function loadAvatar() {
-  try {
-    const res = await fetch(`https://api.lanyard.rest/v1/users/${USER_ID}`);
-    const data = await res.json();
-    const avatarHash = data.data.discord_user.avatar;
-    const discriminator = data.data.discord_user.discriminator;
-    const format = avatarHash.startsWith("a_") ? "gif" : "png";
-    document.getElementById("pfp").src =
-      `https://cdn.discordapp.com/avatars/${USER_ID}/${avatarHash}.${format}?size=256`;
-  } catch(err){
-    console.log("Failed to load PFP:", err);
-    // fallback: generic user avatar
-    document.getElementById("pfp").src = `https://cdn.discordapp.com/embed/avatars/0.png`;
-  }
-}
-
-loadAvatar();
-
-/* ========== LIVE STATUS DOT ========= */
-async function updateStatus() {
-  const res = await fetch(`https://api.lanyard.rest/v1/users/${USER_ID}`);
-  const data = await res.json();
-  const status = data.data.discord_status;
-
-  const colors = {
-    online: "#3ba55c",
-    idle: "#faa81a",
-    dnd: "#ed4245",
-    offline: "#747f8d"
-  };
-
-  document.getElementById("statusDot").style.background =
-    colors[status] || colors.offline;
-}
-
-updateStatus();
-setInterval(updateStatus, 15000);
-
-/* ========== VIEWER COUNT ========= */
+/* ========== VIEWER COUNT WITH CLICK ANIMATION ========== */
 let viewers = localStorage.getItem("viewers");
 if (!viewers) viewers = 499;
-document.getElementById("viewerCount").textContent = viewers;
 
+const viewerEl = document.getElementById("viewerCount");
+viewerEl.textContent = viewers;
+
+// Increment every hour automatically
 setInterval(() => {
   viewers++;
   localStorage.setItem("viewers", viewers);
-  document.getElementById("viewerCount").textContent = viewers;
+  viewerEl.textContent = viewers;
 }, 3600000);
 
-/* ========== STARS ========= */
+// Increment on click with animation
+viewerEl.parentElement.addEventListener("click", () => {
+  viewers++;
+  localStorage.setItem("viewers", viewers);
+  viewerEl.textContent = viewers;
+
+  // Simple pop animation
+  viewerEl.parentElement.style.transform = "scale(1.2)";
+  setTimeout(() => {
+    viewerEl.parentElement.style.transform = "scale(1)";
+  }, 200);
+});
+
+/* ========== GENERATE STARS ========== */
 const starsContainer = document.getElementById("stars-container");
-for(let i=0;i<100;i++){
+for(let i=0;i<120;i++){
   const star = document.createElement("div");
   star.className = "star";
   star.style.top = Math.random()*100 + "vh";
