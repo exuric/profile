@@ -3,161 +3,225 @@
 <head>
 <meta charset="UTF-8">
 <title>BlockBlast</title>
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
+
 <style>
+* { box-sizing: border-box; }
 body {
   margin: 0;
   overflow: hidden;
   font-family: Arial, sans-serif;
-  background: linear-gradient(#0b0b0b, #1a1a1a);
+  background: #000;
   color: white;
+}
+
+/* ===== BACKGROUND ===== */
+#stars, #waves {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+}
+
+#waves {
+  background: linear-gradient(#001, #003);
+  animation: waveMove 8s ease-in-out infinite alternate;
+}
+
+@keyframes waveMove {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-20px); }
+}
+
+/* ===== GAME ===== */
+#game {
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+}
+
+canvas {
+  background: rgba(0,0,0,.4);
+  backdrop-filter: blur(6px);
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.15);
+}
+
+/* ===== UI ===== */
+#ui {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 18px;
+}
+
+/* ===== ADS ===== */
+#ad-left, #ad-right {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 160px;
+  height: 420px;
+  background: rgba(255,255,255,.08);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  font-size: 14px;
 }
 
-#gameCanvas {
-  background: #111;
-  display: block;
-  margin: 0 auto;
-  border: 2px solid #555;
-  border-radius: 15px;
+#ad-left { left: 15px; }
+#ad-right { right: 15px; }
+
+/* ===== FOOTER ===== */
+#footer {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 26px;
+  background: rgba(255,255,255,.08);
+  backdrop-filter: blur(12px);
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.18);
+  font-family: 'Playfair Display', cursive;
+  font-size: 14px;
 }
 
-h1 {
-  margin: 10px 0;
-  font-size: 32px;
-  color: #00ffea;
-  text-shadow: 0 0 10px #00ffea;
-}
+/* ===== BLOCK COLORS ===== */
+.block-normal { background:#ff3b6f; }
+.block-bonus { background:#3bff8f; }
+.block-bomb { background:#ffcc00; }
 
-#scoreboard {
-  margin: 10px 0;
-  font-size: 20px;
-}
-
-#adBanner {
-  width: 90%;
-  height: 90px;
-  background: #222;
-  color: #aaa;
-  margin: 10px auto;
-  line-height: 90px;
-  font-size: 24px;
-  border-radius: 12px;
-  border: 2px dashed #555;
-}
-
-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  background: #00ffea;
-  color: #000;
-  margin: 5px;
-}
-button:hover {
-  background: #00c2b8;
-}
 </style>
 </head>
 <body>
 
-<h1>BlockBlast</h1>
-<div id="scoreboard">Score: 0 | Lives: 3</div>
-<canvas id="gameCanvas" width="600" height="400"></canvas>
-<div id="adBanner">ADVERTISEMENT PLACEHOLDER</div>
-<button id="restartBtn">Restart Game</button>
+<canvas id="stars"></canvas>
+<div id="waves"></div>
+
+<div id="ui">Score: <span id="score">0</span></div>
+
+<div id="ad-left">
+  🔥 Sponsored<br><br>
+  Upgrade your aim<br>
+  Zero effort
+</div>
+
+<div id="ad-right">
+  💸 Ad Slot<br><br>
+  This space earns<br>
+  revenue
+</div>
+
+<div id="game">
+  <canvas id="gameCanvas" width="500" height="600"></canvas>
+</div>
+
+<div id="footer">
+  Website co-founded originally made by .exuric
+</div>
+
+<!-- SOUNDS -->
+<audio id="hit" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.wav"></audio>
+<audio id="boom" src="https://assets.mixkit.co/sfx/preview/mixkit-explosion-hit-1704.wav"></audio>
 
 <script>
+/* ===== STAR BACKGROUND ===== */
+const starCanvas = document.getElementById('stars');
+const sctx = starCanvas.getContext('2d');
+starCanvas.width = innerWidth;
+starCanvas.height = innerHeight;
+
+const stars = Array.from({length:120},()=>({
+  x:Math.random()*starCanvas.width,
+  y:Math.random()*starCanvas.height,
+  r:Math.random()*1.5+0.5,
+  s:Math.random()*0.5+0.2
+}));
+
+function drawStars(){
+  sctx.clearRect(0,0,starCanvas.width,starCanvas.height);
+  sctx.fillStyle='white';
+  stars.forEach(st=>{
+    st.y+=st.s;
+    if(st.y>starCanvas.height) st.y=0;
+    sctx.beginPath();
+    sctx.arc(st.x,st.y,st.r,0,Math.PI*2);
+    sctx.fill();
+  });
+  requestAnimationFrame(drawStars);
+}
+drawStars();
+
+/* ===== GAME ===== */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const hitSound = document.getElementById('hit');
+const boomSound = document.getElementById('boom');
 
 let score = 0;
-let lives = 3;
 let blocks = [];
-let gameInterval;
-let spawnInterval;
 
-// Block properties
-const blockWidth = 50;
-const blockHeight = 50;
-const blockSpeed = 2;
+function spawnBlock(){
+  const typeRand = Math.random();
+  let type = 'normal';
+  if(typeRand > .85) type = 'bomb';
+  else if(typeRand > .65) type = 'bonus';
 
-// Spawn a new block at random x position
-function spawnBlock() {
-  const x = Math.random() * (canvas.width - blockWidth);
-  blocks.push({ x, y: -blockHeight, width: blockWidth, height: blockHeight });
+  blocks.push({
+    x: Math.random()*(canvas.width-60),
+    y: -60,
+    size: 60,
+    speed: 2 + Math.random()*2,
+    type
+  });
 }
 
-// Update game state
-function update() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+setInterval(spawnBlock, 900);
 
-  // Draw blocks
-  for (let i = blocks.length - 1; i >= 0; i--) {
-    const b = blocks[i];
-    b.y += blockSpeed;
-    ctx.fillStyle = '#ff0055';
-    ctx.fillRect(b.x, b.y, b.width, b.height);
+function update(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  blocks.forEach((b,i)=>{
+    b.y += b.speed;
+    ctx.fillStyle =
+      b.type==='bonus'?'#3bff8f':
+      b.type==='bomb'?'#ffcc00':'#ff3b6f';
+    ctx.fillRect(b.x,b.y,b.size,b.size);
+    if(b.y>canvas.height) blocks.splice(i,1);
+  });
+  requestAnimationFrame(update);
+}
+update();
 
-    // If block reaches bottom
-    if (b.y + b.height >= canvas.height) {
-      blocks.splice(i, 1);
-      lives--;
-      updateScoreboard();
-      if (lives <= 0) {
-        endGame();
+canvas.addEventListener('click',e=>{
+  const r=canvas.getBoundingClientRect();
+  const x=e.clientX-r.left;
+  const y=e.clientY-r.top;
+
+  blocks.forEach((b,i)=>{
+    if(x>b.x&&x<b.x+b.size&&y>b.y&&y<b.y+b.size){
+      if(b.type==='bomb'){
+        score = Math.max(0, score-20);
+        boomSound.play();
+      } else if(b.type==='bonus'){
+        score += 30;
+        hitSound.play();
+      } else {
+        score += 10;
+        hitSound.play();
       }
+      document.getElementById('score').textContent=score;
+      blocks.splice(i,1);
     }
-  }
-}
-
-// Update scoreboard text
-function updateScoreboard() {
-  document.getElementById('scoreboard').textContent = `Score: ${score} | Lives: ${lives}`;
-}
-
-// Click event to destroy blocks
-canvas.addEventListener('click', (e) => {
-  const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
-
-  for (let i = blocks.length - 1; i >= 0; i--) {
-    const b = blocks[i];
-    if (mx > b.x && mx < b.x + b.width && my > b.y && my < b.y + b.height) {
-      blocks.splice(i, 1);
-      score += 10;
-      updateScoreboard();
-      break;
-    }
-  }
+  });
 });
-
-// Start game
-function startGame() {
-  blocks = [];
-  score = 0;
-  lives = 3;
-  updateScoreboard();
-  gameInterval = setInterval(update, 20);
-  spawnInterval = setInterval(spawnBlock, 1000);
-}
-
-// End game
-function endGame() {
-  clearInterval(gameInterval);
-  clearInterval(spawnInterval);
-  alert(`Game Over! Your score: ${score}`);
-}
-
-// Restart button
-document.getElementById('restartBtn').addEventListener('click', () => {
-  startGame();
-});
-
-// Start immediately
-startGame();
 </script>
+
 </body>
 </html>
