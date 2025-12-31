@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>BlockBlast</title>
+<title>Roblox Outfit Finder</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
 *{box-sizing:border-box}
@@ -12,65 +12,54 @@ body{
   margin:0;
   background:black;
   color:white;
+  font-family:Inter,Arial;
   overflow:hidden;
-  font-family:Arial;
 }
-canvas{touch-action:none}
 
-/* BACKGROUND */
 #stars,#waves{
   position:fixed;
   inset:0;
   z-index:-2;
 }
 #waves{
-  background:linear-gradient(#001,#003);
-  animation:wave 7s ease-in-out infinite alternate;
+  background:linear-gradient(#001,#002);
+  animation:wave 8s ease-in-out infinite alternate;
 }
-@keyframes wave{to{transform:translateY(-25px)}}
+@keyframes wave{to{transform:translateY(-30px)}}
 
-/* GLASS */
 .glass{
   background:rgba(255,255,255,.08);
-  backdrop-filter:blur(12px);
-  border:1px solid rgba(255,255,255,.18);
+  backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.15);
   border-radius:16px;
 }
 
-/* LAYOUT */
 #wrap{
+  height:100vh;
   display:flex;
   align-items:center;
   justify-content:center;
-  height:100vh;
 }
 
 #app{
-  width:420px;
+  width:440px;
   padding:28px;
   text-align:center;
-}
-
-/* UI */
-h1{
-  font-family:'Playfair Display',cursive;
-  margin-bottom:10px;
 }
 
 input{
   width:100%;
   padding:12px;
-  border-radius:10px;
   border:none;
-  outline:none;
-  margin-top:10px;
+  border-radius:10px;
   font-size:16px;
+  outline:none;
 }
 
 button{
   margin-top:14px;
-  padding:12px;
   width:100%;
+  padding:12px;
   border:none;
   border-radius:10px;
   background:#ff3b6f;
@@ -79,25 +68,30 @@ button{
   cursor:pointer;
 }
 
-#result{
-  margin-top:20px;
+#profile{
+  margin-top:22px;
   display:none;
 }
 
-.avatar{
+#avatar{
   margin-top:12px;
   border-radius:12px;
   border:2px solid rgba(255,255,255,.2);
 }
 
-#footer{
-  position:absolute;
-  bottom:14px;
-  left:50%;
-  transform:translateX(-50%);
-  padding:10px 26px;
-  font-family:'Playfair Display',cursive;
-  font-size:14px;
+.items{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+}
+
+.item{
+  background:rgba(255,255,255,.06);
+  padding:6px;
+  border-radius:10px;
+  font-size:11px;
+  text-align:center;
 }
 </style>
 </head>
@@ -108,34 +102,30 @@ button{
 
 <div id="wrap">
   <div id="app" class="glass">
-    <h1>BlockBlast</h1>
-    <p>Search Roblox users & view avatars</p>
+    <h2>Roblox Outfit Finder</h2>
+    <p>View a user's current outfit</p>
 
-    <input id="username" placeholder="Enter Roblox username">
-    <button onclick="searchUser()">Search</button>
+    <input id="username" placeholder="Roblox username">
+    <button onclick="findUser()">Find Outfit</button>
 
-    <div id="result">
-      <h3 id="displayName"></h3>
-      <p>User ID: <span id="userId"></span></p>
-      <img id="avatar" class="avatar" width="180" height="180">
+    <div id="profile">
+      <h3 id="name"></h3>
+      <img id="avatar" width="180" height="180">
+      <div class="items" id="items"></div>
     </div>
   </div>
 </div>
 
-<div id="footer" class="glass">
-  Website co-founded originally made by .exuric
-</div>
-
 <script>
-/* STARS */
+/* BACKGROUND STARS */
 const sc=document.getElementById("stars"),sctx=sc.getContext("2d");
 sc.width=innerWidth; sc.height=innerHeight;
 const stars=[...Array(140)].map(()=>({
   x:Math.random()*sc.width,
   y:Math.random()*sc.height,
-  s:Math.random()+.3
+  s:Math.random()+.4
 }));
-(function starLoop(){
+(function loop(){
   sctx.clearRect(0,0,sc.width,sc.height);
   sctx.fillStyle="white";
   stars.forEach(st=>{
@@ -143,43 +133,53 @@ const stars=[...Array(140)].map(()=>({
     if(st.y>sc.height) st.y=0;
     sctx.fillRect(st.x,st.y,1.5,1.5);
   });
-  requestAnimationFrame(starLoop);
+  requestAnimationFrame(loop);
 })();
 
-/* ROBLOX SEARCH */
-async function searchUser(){
-  const name=document.getElementById("username").value.trim();
-  if(!name) return;
+/* ROBLOX API */
+async function findUser(){
+  const username=document.getElementById("username").value.trim();
+  if(!username) return;
 
-  document.getElementById("result").style.display="none";
+  document.getElementById("profile").style.display="none";
 
   try{
-    // Get user ID
-    const userRes=await fetch("https://users.roblox.com/v1/usernames/users",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({
-        usernames:[name],
-        excludeBannedUsers:false
-      })
-    });
+    // 1️⃣ Username → UserId (reliable endpoint)
+    const userRes=await fetch(
+      `https://api.allorigins.win/raw?url=https://users.roblox.com/v1/users/search?keyword=${encodeURIComponent(username)}&limit=10`
+    );
     const userData=await userRes.json();
-    if(!userData.data.length) throw "User not found";
+    const user=userData.data.find(u=>u.name.toLowerCase()===username.toLowerCase());
+    if(!user) throw "Not found";
 
-    const user=userData.data[0];
-    document.getElementById("displayName").textContent=user.displayName;
-    document.getElementById("userId").textContent=user.id;
+    document.getElementById("name").textContent=user.displayName;
 
-    // Get avatar
+    // 2️⃣ Avatar
     const avatarRes=await fetch(
-      `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${user.id}&size=420x420&format=Png&isCircular=false`
+      `https://api.allorigins.win/raw?url=https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${user.id}&size=420x420&format=Png`
     );
     const avatarData=await avatarRes.json();
     document.getElementById("avatar").src=avatarData.data[0].imageUrl;
 
-    document.getElementById("result").style.display="block";
+    // 3️⃣ Outfit details
+    const outfitRes=await fetch(
+      `https://api.allorigins.win/raw?url=https://avatar.roblox.com/v1/users/${user.id}/currently-wearing`
+    );
+    const outfitData=await outfitRes.json();
+
+    const itemsDiv=document.getElementById("items");
+    itemsDiv.innerHTML="";
+
+    outfitData.assetIds.forEach(id=>{
+      const div=document.createElement("div");
+      div.className="item";
+      div.textContent=`Asset ${id}`;
+      itemsDiv.appendChild(div);
+    });
+
+    document.getElementById("profile").style.display="block";
   }catch(e){
-    alert("User not found");
+    alert("User not found or Roblox API blocked");
   }
 }
 </script>
